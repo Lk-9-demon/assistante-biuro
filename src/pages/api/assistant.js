@@ -19,7 +19,10 @@ module.exports = async function handler(req, res) {
 		if (!thread) {
 			const r = await fetch('https://api.openai.com/v1/threads', {
 				method: 'POST',
-				headers: { Authorization: `Bearer ${OPENAI_KEY}` },
+				headers: {
+					Authorization: `Bearer ${OPENAI_KEY}`,
+					'OpenAI-Beta': 'assistants=v2',
+				},
 			})
 			const j = await r.json()
 			thread = j.id
@@ -31,6 +34,7 @@ module.exports = async function handler(req, res) {
 			headers: {
 				Authorization: `Bearer ${OPENAI_KEY}`,
 				'Content-Type': 'application/json',
+				'OpenAI-Beta': 'assistants=v2',
 			},
 			body: JSON.stringify({ role: 'user', content: message }),
 		})
@@ -43,6 +47,7 @@ module.exports = async function handler(req, res) {
 				headers: {
 					Authorization: `Bearer ${OPENAI_KEY}`,
 					'Content-Type': 'application/json',
+					'OpenAI-Beta': 'assistants=v2',
 				},
 				body: JSON.stringify({ assistant_id: ASSISTANT_ID }),
 			}
@@ -52,7 +57,12 @@ module.exports = async function handler(req, res) {
 		for (let i = 0; i < 25; i++) {
 			const st = await fetch(
 				`https://api.openai.com/v1/threads/${thread}/runs/${run.id}`,
-				{ headers: { Authorization: `Bearer ${OPENAI_KEY}` } }
+				{
+					headers: {
+						Authorization: `Bearer ${OPENAI_KEY}`,
+						'OpenAI-Beta': 'assistants=v2',
+					},
+				}
 			).then(r => r.json())
 			if (st.status === 'completed') break
 			await new Promise(s => setTimeout(s, 700))
@@ -61,7 +71,12 @@ module.exports = async function handler(req, res) {
 		// 5) взяти останню відповідь
 		const msgs = await fetch(
 			`https://api.openai.com/v1/threads/${thread}/messages?order=desc&limit=1`,
-			{ headers: { Authorization: `Bearer ${OPENAI_KEY}` } }
+			{
+				headers: {
+					Authorization: `Bearer ${OPENAI_KEY}`,
+					'OpenAI-Beta': 'assistants=v2',
+				},
+			}
 		).then(r => r.json())
 
 		const answer =
